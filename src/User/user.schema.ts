@@ -1,4 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Kanji, KanjiSchema } from 'src/Kanji/kanji.schema';
+import { Words, WordsSchema } from 'src/Words/words.schema';
 import { isEmail } from 'validator';
 
 @Schema()
@@ -19,41 +21,11 @@ export class User {
   @Prop({ required: true })
   password: string;
 
-  @Prop()
-  words: string[];
+  @Prop({ type: [WordsSchema], default: [] })
+  words: Words[];
 
-  @Prop()
-  kanji: string[];
+  @Prop({ type: [KanjiSchema], default: [] })
+  kanji: Kanji[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-
-/* 
-  @Prop(
-    raw({
-      category: { type: String, require: true },
-      word: { type: String, require: true },
-      translation: { type: String, require: true },
-    }),
-  )
-  words: {
-    category: string;
-    word: string;
-    translation: string;
-  }[];
-
-  @Prop(
-    raw({
-      kanji: { type: String, require: true },
-      translation: { type: String, require: true },
-      jap: { type: String },
-      cny: { type: String },
-    }),
-  )
-  kanji: {
-    kanji: string;
-    translation: string;
-    jap: string;
-    cny: string;
-  }[];
-   */

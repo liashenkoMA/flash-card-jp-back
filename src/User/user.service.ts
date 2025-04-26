@@ -65,4 +65,74 @@ export class UserServise {
       email: user.email,
     };
   }
+
+  async uploadKanji(headers, data) {
+    const token = headers.replace('Bearer ', '');
+
+    if (!token) {
+      throw new UnauthorizedException('Не авторизованы');
+    }
+
+    const payload = await this.jwtService.verifyAsync(token, {
+      secret: process.env.JWT_CONSTANT,
+    });
+
+    const kanji = { ...data, learn: true };
+
+    const updateUser = await this.userModel
+      .updateOne(
+        { email: payload.username },
+        {
+          $push: { kanji: kanji },
+        },
+      )
+      .exec();
+
+    return updateUser;
+  }
+
+  async uploadWords(headers, data) {
+    const token = headers.replace('Bearer ', '');
+
+    if (!token) {
+      throw new UnauthorizedException('Не авторизованы');
+    }
+
+    const payload = await this.jwtService.verifyAsync(token, {
+      secret: process.env.JWT_CONSTANT,
+    });
+
+    const words = { ...data, learn: true };
+
+    const updateUser = await this.userModel
+      .updateOne(
+        { email: payload.username },
+        {
+          $push: { words: words },
+        },
+      )
+      .exec();
+
+    return updateUser;
+  }
+
+  async getCategoryWords(headers) {
+    const token = headers.replace('Bearer ', '');
+
+    if (!token) {
+      throw new UnauthorizedException('Не авторизованы');
+    }
+
+    const payload = await this.jwtService.verifyAsync(token, {
+      secret: process.env.JWT_CONSTANT,
+    });
+
+    const user = await this.userModel.findOne({
+      email: payload.username,
+    });
+
+    const categories = [...new Set(user.words.map((word) => word.category))];
+
+    return categories;
+  }
 }
