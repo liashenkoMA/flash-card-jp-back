@@ -135,4 +135,86 @@ export class UserServise {
 
     return categories;
   }
+
+  async getKanji(headers) {
+    const token = headers.replace('Bearer ', '');
+
+    if (!token) {
+      throw new UnauthorizedException('Не авторизованы');
+    }
+
+    const payload = await this.jwtService.verifyAsync(token, {
+      secret: process.env.JWT_CONSTANT,
+    });
+
+    const user = await this.userModel.findOne({
+      email: payload.username,
+    });
+
+    const kanjiList = user.kanji;
+    return kanjiList;
+  }
+
+  async getWords(headers) {
+    const token = headers.replace('Bearer ', '');
+
+    if (!token) {
+      throw new UnauthorizedException('Не авторизованы');
+    }
+
+    const payload = await this.jwtService.verifyAsync(token, {
+      secret: process.env.JWT_CONSTANT,
+    });
+
+    const user = await this.userModel.findOne({
+      email: payload.username,
+    });
+
+    const wordsList = user.words;
+    return wordsList;
+  }
+
+  async updateKanji(headers, data) {
+    const token = headers.replace('Bearer ', '');
+
+    if (!token) {
+      throw new UnauthorizedException('Не авторизованы');
+    }
+
+    const payload = await this.jwtService.verifyAsync(token, {
+      secret: process.env.JWT_CONSTANT,
+    });
+
+    const user = await this.userModel.updateOne(
+      {
+        email: payload.username,
+        'kanji.kanji': data.kanji.kanji,
+      },
+      { $set: { 'kanji.$.learn': false } },
+    );
+
+    return { message: 'Кандзи изучен' };
+  }
+
+  async updateWord(headers, data) {
+    const token = headers.replace('Bearer ', '');
+
+    if (!token) {
+      throw new UnauthorizedException('Не авторизованы');
+    }
+
+    const payload = await this.jwtService.verifyAsync(token, {
+      secret: process.env.JWT_CONSTANT,
+    });
+
+    const user = await this.userModel.updateOne(
+      {
+        email: payload.username,
+        'words.word': data.word.word,
+      },
+      { $set: { 'words.$.learn': false } },
+    );
+
+    return { message: 'Слово изучено' };
+  }
 }

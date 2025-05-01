@@ -15,4 +15,14 @@ export class WordsController {
   getCategoryWords(@Headers('authorization') headers: any) {
     return this.userService.getCategoryWords(headers);
   }
+
+  @Get()
+  getWords(@Headers('authorization') headers: any) {
+    return this.userService.getWords(headers);
+  }
+
+  @Patch('update')
+  updateWord(@Headers('authorization') headers: any, @Body() data: WordsDTO) {
+    return this.userService.updateWord(headers, data);
+  }
 }
