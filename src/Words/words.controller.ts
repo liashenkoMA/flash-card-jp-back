@@ -25,4 +25,9 @@ export class WordsController {
   updateWord(@Headers('authorization') headers: any, @Body() data: WordsDTO) {
     return this.userService.updateWord(headers, data);
   }
+
+  @Patch('delete')
+  deleteWord(@Headers('authorization') headers: any, @Body() data: WordsDTO) {
+    return this.userService.deleteWord(headers, data);
+  }
 }
