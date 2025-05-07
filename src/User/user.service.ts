@@ -185,15 +185,27 @@ export class UserServise {
       secret: process.env.JWT_CONSTANT,
     });
 
-    const user = await this.userModel.updateOne(
-      {
-        email: payload.username,
-        'kanji.kanji': data.kanji.kanji,
-      },
-      { $set: { 'kanji.$.learn': false } },
-    );
+    if (data.kanji.learn) {
+      const user = await this.userModel.updateOne(
+        {
+          email: payload.username,
+          'kanji.kanji': data.kanji.kanji,
+        },
+        { $set: { 'kanji.$.learn': false } },
+      );
 
-    return { message: 'Кандзи изучен' };
+      return { message: 'Кандзи изучен' };
+    } else {
+      const user = await this.userModel.updateOne(
+        {
+          email: payload.username,
+          'kanji.kanji': data.kanji.kanji,
+        },
+        { $set: { 'kanji.$.learn': true } },
+      );
+
+      return { message: 'Кандзи не изучен' };
+    }
   }
 
   async updateWord(headers, data) {
@@ -216,5 +228,26 @@ export class UserServise {
     );
 
     return { message: 'Слово изучено' };
+  }
+
+  async deleteKanji(headers, data) {
+    const token = headers.replace('Bearer ', '');
+
+    if (!token) {
+      throw new UnauthorizedException('Не авторизованы');
+    }
+
+    const payload = await this.jwtService.verifyAsync(token, {
+      secret: process.env.JWT_CONSTANT,
+    });
+
+    const user = await this.userModel.updateOne(
+      {
+        email: payload.username,
+      },
+      { $pull: { kanji: { kanji: data.kanji.kanji } } },
+    );
+
+    return { message: 'Кандзи удалено' };
   }
 }

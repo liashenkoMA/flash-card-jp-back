@@ -20,4 +20,9 @@ export class KanjiController {
   updateKanji(@Headers('authorization') headers: any, @Body() data: KanjiDTO) {
     return this.userService.updateKanji(headers, data);
   }
+
+  @Patch('delete')
+  deleteKanji(@Headers('authorization') headers: any, @Body() data: KanjiDTO) {
+    return this.userService.deleteKanji(headers, data);
+  }
 }
