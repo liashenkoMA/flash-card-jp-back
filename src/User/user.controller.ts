@@ -12,7 +12,7 @@ export class UserController {
   }
 
   @Get('/me')
-  getUser(@Headers('authorization') headers: any) {
+  getUser(@Headers('authorization') headers: string) {
     return this.userService.getUser(headers);
   }
 }

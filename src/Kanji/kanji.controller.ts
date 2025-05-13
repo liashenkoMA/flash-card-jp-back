@@ -7,22 +7,31 @@ export class KanjiController {
   constructor(private readonly userService: UserServise) {}
 
   @Patch('upload')
-  uploadKanji(@Headers('authorization') headers: any, @Body() data: KanjiDTO) {
+  uploadKanji(
+    @Headers('authorization') headers: string,
+    @Body() data: KanjiDTO,
+  ) {
     return this.userService.uploadKanji(headers, data);
   }
 
   @Get()
-  getKanji(@Headers('authorization') headers: any) {
+  getKanji(@Headers('authorization') headers: string) {
     return this.userService.getKanji(headers);
   }
 
   @Patch('update')
-  updateKanji(@Headers('authorization') headers: any, @Body() data: KanjiDTO) {
+  updateKanji(
+    @Headers('authorization') headers: string,
+    @Body() data: KanjiDTO,
+  ) {
     return this.userService.updateKanji(headers, data);
   }
 
   @Patch('delete')
-  deleteKanji(@Headers('authorization') headers: any, @Body() data: KanjiDTO) {
+  deleteKanji(
+    @Headers('authorization') headers: string,
+    @Body() data: KanjiDTO,
+  ) {
     return this.userService.deleteKanji(headers, data);
   }
 }

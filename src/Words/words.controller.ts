@@ -7,27 +7,36 @@ export class WordsController {
   constructor(private readonly userService: UserServise) {}
 
   @Patch('upload')
-  uploadKanji(@Headers('authorization') headers: any, @Body() data: WordsDTO) {
+  uploadKanji(
+    @Headers('authorization') headers: string,
+    @Body() data: WordsDTO,
+  ) {
     return this.userService.uploadWords(headers, data);
   }
 
   @Get('getcategory')
-  getCategoryWords(@Headers('authorization') headers: any) {
+  getCategoryWords(@Headers('authorization') headers: string) {
     return this.userService.getCategoryWords(headers);
   }
 
   @Get()
-  getWords(@Headers('authorization') headers: any) {
+  getWords(@Headers('authorization') headers: string) {
     return this.userService.getWords(headers);
   }
 
   @Patch('update')
-  updateWord(@Headers('authorization') headers: any, @Body() data: WordsDTO) {
+  updateWord(
+    @Headers('authorization') headers: string,
+    @Body() data: WordsDTO,
+  ) {
     return this.userService.updateWord(headers, data);
   }
 
   @Patch('delete')
-  deleteWord(@Headers('authorization') headers: any, @Body() data: WordsDTO) {
+  deleteWord(
+    @Headers('authorization') headers: string,
+    @Body() data: WordsDTO,
+  ) {
     return this.userService.deleteWord(headers, data);
   }
 }

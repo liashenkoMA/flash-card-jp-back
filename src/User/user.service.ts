@@ -9,6 +9,8 @@ import { Model } from 'mongoose';
 import { UserDTO } from './user.schema.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { KanjiDTO } from 'src/Kanji/kanji.schema.dto';
+import { WordsDTO } from 'src/Words/words.schema.dto';
 
 @Injectable()
 export class UserServise {
@@ -17,7 +19,26 @@ export class UserServise {
     private jwtService: JwtService,
   ) {}
 
-  async createUser(user: UserDTO) {
+  private async validateAndGetPayload(headers: string) {
+    const token = headers?.startsWith('Bearer ')
+      ? headers.replace('Bearer ', '')
+      : null;
+
+    if (!token) {
+      throw new UnauthorizedException('Не авторизованы');
+    }
+
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_CONSTANT,
+      });
+      return payload;
+    } catch {
+      throw new UnauthorizedException('Невалидный токен');
+    }
+  }
+
+  async createUser(user: UserDTO): Promise<{ data: string }> {
     const oldUser = await this.userModel.findOne({ email: user.email }).exec();
 
     if (oldUser) {
@@ -35,23 +56,15 @@ export class UserServise {
       kanji: [],
     });
 
-    createUser.save();
+    await createUser.save();
 
     return {
       data: user.email,
     };
   }
 
-  async getUser(headers) {
-    const token = headers.replace('Bearer ', '');
-
-    if (!token) {
-      throw new UnauthorizedException('Не авторизованы');
-    }
-
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: process.env.JWT_CONSTANT,
-    });
+  async getUser(headers): Promise<{ email: string }> {
+    const payload = await this.validateAndGetPayload(headers);
 
     const user = await this.userModel
       .findOne({ email: payload.username })
@@ -67,21 +80,13 @@ export class UserServise {
   }
 
   async uploadKanji(headers, data) {
-    const token = headers.replace('Bearer ', '');
-
-    if (!token) {
-      throw new UnauthorizedException('Не авторизованы');
-    }
-
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: process.env.JWT_CONSTANT,
-    });
+    const { username: email } = await this.validateAndGetPayload(headers);
 
     const kanji = { ...data, learn: true };
 
     const updateUser = await this.userModel
       .updateOne(
-        { email: payload.username },
+        { email },
         {
           $push: { kanji: kanji },
         },
@@ -92,21 +97,13 @@ export class UserServise {
   }
 
   async uploadWords(headers, data) {
-    const token = headers.replace('Bearer ', '');
-
-    if (!token) {
-      throw new UnauthorizedException('Не авторизованы');
-    }
-
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: process.env.JWT_CONSTANT,
-    });
+    const { username: email } = await this.validateAndGetPayload(headers);
 
     const words = { ...data, learn: true };
 
     const updateUser = await this.userModel
       .updateOne(
-        { email: payload.username },
+        { email },
         {
           $push: { words: words },
         },
@@ -117,78 +114,49 @@ export class UserServise {
   }
 
   async getCategoryWords(headers) {
-    const token = headers.replace('Bearer ', '');
+    const { username: email } = await this.validateAndGetPayload(headers);
 
-    if (!token) {
-      throw new UnauthorizedException('Не авторизованы');
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      throw new UnauthorizedException('Пользователь не найден');
     }
-
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: process.env.JWT_CONSTANT,
-    });
-
-    const user = await this.userModel.findOne({
-      email: payload.username,
-    });
 
     const categories = [...new Set(user.words.map((word) => word.category))];
 
     return categories;
   }
 
-  async getKanji(headers) {
-    const token = headers.replace('Bearer ', '');
+  async getKanji(headers): Promise<KanjiDTO[]> {
+    const { username: email } = await this.validateAndGetPayload(headers);
 
-    if (!token) {
-      throw new UnauthorizedException('Не авторизованы');
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      throw new UnauthorizedException('Пользователь не найден');
     }
-
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: process.env.JWT_CONSTANT,
-    });
-
-    const user = await this.userModel.findOne({
-      email: payload.username,
-    });
 
     const kanjiList = user.kanji;
     return kanjiList;
   }
 
-  async getWords(headers) {
-    const token = headers.replace('Bearer ', '');
+  async getWords(headers): Promise<WordsDTO[]> {
+    const { username: email } = await this.validateAndGetPayload(headers);
 
-    if (!token) {
-      throw new UnauthorizedException('Не авторизованы');
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      throw new UnauthorizedException('Пользователь не найден');
     }
-
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: process.env.JWT_CONSTANT,
-    });
-
-    const user = await this.userModel.findOne({
-      email: payload.username,
-    });
 
     const wordsList = user.words;
     return wordsList;
   }
 
-  async updateKanji(headers, data) {
-    const token = headers.replace('Bearer ', '');
-
-    if (!token) {
-      throw new UnauthorizedException('Не авторизованы');
-    }
-
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: process.env.JWT_CONSTANT,
-    });
+  async updateKanji(headers, data): Promise<{ message: string }> {
+    const { username: email } = await this.validateAndGetPayload(headers);
 
     if (data.kanji.learn) {
-      const user = await this.userModel.updateOne(
+      await this.userModel.updateOne(
         {
-          email: payload.username,
+          email,
           'kanji.kanji': data.kanji.kanji,
         },
         { $set: { 'kanji.$.learn': false } },
@@ -196,9 +164,9 @@ export class UserServise {
 
       return { message: 'Кандзи изучен' };
     } else {
-      const user = await this.userModel.updateOne(
+      await this.userModel.updateOne(
         {
-          email: payload.username,
+          email,
           'kanji.kanji': data.kanji.kanji,
         },
         { $set: { 'kanji.$.learn': true } },
@@ -208,21 +176,13 @@ export class UserServise {
     }
   }
 
-  async updateWord(headers, data) {
-    const token = headers.replace('Bearer ', '');
-
-    if (!token) {
-      throw new UnauthorizedException('Не авторизованы');
-    }
-
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: process.env.JWT_CONSTANT,
-    });
+  async updateWord(headers, data): Promise<{ message: string }> {
+    const { username: email } = await this.validateAndGetPayload(headers);
 
     if (data.word.learn) {
-      const user = await this.userModel.updateOne(
+      await this.userModel.updateOne(
         {
-          email: payload.username,
+          email,
           'words.word': data.word.word,
         },
         { $set: { 'words.$.learn': false } },
@@ -230,9 +190,9 @@ export class UserServise {
 
       return { message: 'Слово изучено' };
     } else {
-      const user = await this.userModel.updateOne(
+      await this.userModel.updateOne(
         {
-          email: payload.username,
+          email,
           'words.word': data.word.word,
         },
         { $set: { 'words.$.learn': true } },
@@ -242,20 +202,12 @@ export class UserServise {
     }
   }
 
-  async deleteKanji(headers, data) {
-    const token = headers.replace('Bearer ', '');
+  async deleteKanji(headers, data): Promise<{ message: string }> {
+    const { username: email } = await this.validateAndGetPayload(headers);
 
-    if (!token) {
-      throw new UnauthorizedException('Не авторизованы');
-    }
-
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: process.env.JWT_CONSTANT,
-    });
-
-    const user = await this.userModel.updateOne(
+    await this.userModel.updateOne(
       {
-        email: payload.username,
+        email,
       },
       { $pull: { kanji: { kanji: data.kanji.kanji } } },
     );
@@ -263,20 +215,12 @@ export class UserServise {
     return { message: 'Кандзи удалено' };
   }
 
-  async deleteWord(headers, data) {
-    const token = headers.replace('Bearer ', '');
+  async deleteWord(headers, data): Promise<{ message: string }> {
+    const { username: email } = await this.validateAndGetPayload(headers);
 
-    if (!token) {
-      throw new UnauthorizedException('Не авторизованы');
-    }
-
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: process.env.JWT_CONSTANT,
-    });
-
-    const user = await this.userModel.updateOne(
+    await this.userModel.updateOne(
       {
-        email: payload.username,
+        email,
       },
       { $pull: { words: { word: data.word.word } } },
     );
