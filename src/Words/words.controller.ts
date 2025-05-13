@@ -27,7 +27,7 @@ export class WordsController {
   @Patch('update')
   updateWord(
     @Headers('authorization') headers: string,
-    @Body() data: WordsDTO,
+    @Body() data: { word: WordsDTO },
   ) {
     return this.userService.updateWord(headers, data);
   }
@@ -35,7 +35,7 @@ export class WordsController {
   @Patch('delete')
   deleteWord(
     @Headers('authorization') headers: string,
-    @Body() data: WordsDTO,
+    @Body() data: { word: WordsDTO },
   ) {
     return this.userService.deleteWord(headers, data);
   }

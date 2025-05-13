@@ -63,7 +63,7 @@ export class UserServise {
     };
   }
 
-  async getUser(headers): Promise<{ email: string }> {
+  async getUser(headers: string): Promise<{ email: string }> {
     const payload = await this.validateAndGetPayload(headers);
 
     const user = await this.userModel
@@ -79,12 +79,15 @@ export class UserServise {
     };
   }
 
-  async uploadKanji(headers, data) {
+  async uploadKanji(
+    headers: string,
+    data: KanjiDTO,
+  ): Promise<{ message: string }> {
     const { username: email } = await this.validateAndGetPayload(headers);
 
     const kanji = { ...data, learn: true };
 
-    const updateUser = await this.userModel
+    await this.userModel
       .updateOne(
         { email },
         {
@@ -93,15 +96,18 @@ export class UserServise {
       )
       .exec();
 
-    return updateUser;
+    return { message: 'Добавлено' };
   }
 
-  async uploadWords(headers, data) {
+  async uploadWords(
+    headers: string,
+    data: WordsDTO,
+  ): Promise<{ message: string }> {
     const { username: email } = await this.validateAndGetPayload(headers);
 
     const words = { ...data, learn: true };
 
-    const updateUser = await this.userModel
+    await this.userModel
       .updateOne(
         { email },
         {
@@ -110,10 +116,10 @@ export class UserServise {
       )
       .exec();
 
-    return updateUser;
+    return { message: 'Добавлено' };
   }
 
-  async getCategoryWords(headers) {
+  async getCategoryWords(headers: string): Promise<string[]> {
     const { username: email } = await this.validateAndGetPayload(headers);
 
     const user = await this.userModel.findOne({ email });
@@ -126,7 +132,7 @@ export class UserServise {
     return categories;
   }
 
-  async getKanji(headers): Promise<KanjiDTO[]> {
+  async getKanji(headers: string): Promise<KanjiDTO[]> {
     const { username: email } = await this.validateAndGetPayload(headers);
 
     const user = await this.userModel.findOne({ email });
@@ -138,7 +144,7 @@ export class UserServise {
     return kanjiList;
   }
 
-  async getWords(headers): Promise<WordsDTO[]> {
+  async getWords(headers: string): Promise<WordsDTO[]> {
     const { username: email } = await this.validateAndGetPayload(headers);
 
     const user = await this.userModel.findOne({ email });
@@ -150,7 +156,10 @@ export class UserServise {
     return wordsList;
   }
 
-  async updateKanji(headers, data): Promise<{ message: string }> {
+  async updateKanji(
+    headers: string,
+    data: { kanji: KanjiDTO },
+  ): Promise<{ message: string }> {
     const { username: email } = await this.validateAndGetPayload(headers);
 
     if (data.kanji.learn) {
@@ -176,7 +185,10 @@ export class UserServise {
     }
   }
 
-  async updateWord(headers, data): Promise<{ message: string }> {
+  async updateWord(
+    headers: string,
+    data: { word: WordsDTO },
+  ): Promise<{ message: string }> {
     const { username: email } = await this.validateAndGetPayload(headers);
 
     if (data.word.learn) {
@@ -202,7 +214,10 @@ export class UserServise {
     }
   }
 
-  async deleteKanji(headers, data): Promise<{ message: string }> {
+  async deleteKanji(
+    headers: string,
+    data: { kanji: KanjiDTO },
+  ): Promise<{ message: string }> {
     const { username: email } = await this.validateAndGetPayload(headers);
 
     await this.userModel.updateOne(
@@ -215,7 +230,10 @@ export class UserServise {
     return { message: 'Кандзи удалено' };
   }
 
-  async deleteWord(headers, data): Promise<{ message: string }> {
+  async deleteWord(
+    headers: string,
+    data: { word: WordsDTO },
+  ): Promise<{ message: string }> {
     const { username: email } = await this.validateAndGetPayload(headers);
 
     await this.userModel.updateOne(

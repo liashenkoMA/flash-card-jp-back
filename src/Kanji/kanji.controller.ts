@@ -22,7 +22,7 @@ export class KanjiController {
   @Patch('update')
   updateKanji(
     @Headers('authorization') headers: string,
-    @Body() data: KanjiDTO,
+    @Body() data: { kanji: KanjiDTO },
   ) {
     return this.userService.updateKanji(headers, data);
   }
@@ -30,7 +30,7 @@ export class KanjiController {
   @Patch('delete')
   deleteKanji(
     @Headers('authorization') headers: string,
-    @Body() data: KanjiDTO,
+    @Body() data: { kanji: KanjiDTO },
   ) {
     return this.userService.deleteKanji(headers, data);
   }
