@@ -7,7 +7,11 @@ async function bootstrap() {
   app.use(helmet());
   app.enableCors({
     credentials: true,
-    origin: ['http://localhost:3001'],
+    origin: [
+      'http://localhost:3001',
+      'http://flashcardsjp.ru',
+      'https://flashcardsjp.ru',
+    ],
   });
   await app.listen(process.env.PORT ?? 3000);
 }
