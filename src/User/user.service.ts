@@ -79,44 +79,44 @@ export class UserServise {
     };
   }
 
-  async uploadKanji(
-    headers: string,
-    data: KanjiDTO,
-  ): Promise<{ message: string }> {
+  async uploadKanji(headers: string, data: KanjiDTO) {
     const { username: email } = await this.validateAndGetPayload(headers);
 
     const kanji = { ...data, learn: true };
 
-    await this.userModel
-      .updateOne(
+    const updatedUser = await this.userModel
+      .findOneAndUpdate(
         { email },
         {
           $push: { kanji: kanji },
         },
+        { new: true },
       )
-      .exec();
+      .lean();
 
-    return { message: 'Добавлено' };
+    const addedKanji = updatedUser.kanji[updatedUser.kanji.length - 1];
+
+    return addedKanji;
   }
 
-  async uploadWords(
-    headers: string,
-    data: WordsDTO,
-  ): Promise<{ message: string }> {
+  async uploadWords(headers: string, data: WordsDTO) {
     const { username: email } = await this.validateAndGetPayload(headers);
 
     const words = { ...data, learn: true };
 
-    await this.userModel
-      .updateOne(
+    const updateUser = await this.userModel
+      .findOneAndUpdate(
         { email },
         {
           $push: { words: words },
         },
+        { new: true },
       )
       .exec();
 
-    return { message: 'Добавлено' };
+    const addedWord = updateUser.words[updateUser.words.length - 1];
+
+    return addedWord;
   }
 
   async getCategoryWords(headers: string): Promise<string[]> {
